@@ -1,5 +1,6 @@
 #include "pkcs11.h"
 #include "eaas.h"
+#include "base64.h"
 
 #include <dlfcn.h>
 #include <iostream>
@@ -50,7 +51,7 @@ int legacy() {
     // Get random from Qrypt
     std::string token = "abcdefg";
     EaaS eaasClient("");
-    std::string response = eaasClient.requestEntropy(1);    
+    //std::string response = eaasClient.requestEntropy(1);    
 
     // Seed random number generator
     CK_BYTE seedData[] = {0x01, 0x02, 0x03, 0x04}; // Replace with your seed data
@@ -79,8 +80,10 @@ int main() {
 
     const char* qryptToken = std::getenv("QRYPT_TOKEN");
     EaaS eaasClient(qryptToken);
-    std::string response = eaasClient.requestEntropy(2);
+    std::vector<uint8_t> random = eaasClient.requestEntropy(2);
 
+    std::string base64random = base64_encode(random.data(), random.size());
+    printf("%s\n", base64random.c_str());
 
     return 0;
     

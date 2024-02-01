@@ -14,7 +14,7 @@ class EaaS {
     EaaS(const EaaS &) = delete;
     EaaS &operator=(const EaaS &) = delete;
     
-    std::string requestEntropy(uint32_t size = 1);
+    std::vector<uint8_t> requestEntropy(uint32_t size = 1);
 
   private:
     std::string _token;

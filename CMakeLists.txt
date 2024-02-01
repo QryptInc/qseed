@@ -6,6 +6,7 @@ find_package(RapidJSON)
 
 # build the executable
 add_executable (qseed 
+    src/base64.cpp
     src/eaas.cc 
     src/http_client.cc
     src/qseed.cc

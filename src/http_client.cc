@@ -1,8 +1,7 @@
+#include "http_client.h"
 
 #include <curl/curl.h>
 #include <stdexcept>
-
-#include "http_client.h"
 
 CurlClient::CurlClient() {
     curl_global_init(CURL_GLOBAL_ALL);

@@ -1,9 +1,8 @@
 #include "eaas.h"
+#include "base64.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-#include <curl/curl.h>
-#include <iostream>
 
 const uint32_t MIN_REQUEST = 1;
 const uint32_t MAX_REQUEST = 512;
@@ -43,7 +42,7 @@ std::vector<std::string> parseJsonResponse(std::string jsonResponse) {
 
 }
 
-std::string EaaS::requestEntropy(uint32_t size) {
+std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
 
     // check size
     if (size < MIN_REQUEST || size > MAX_REQUEST) {
@@ -66,15 +65,17 @@ std::string EaaS::requestEntropy(uint32_t size) {
     // Perform HTTP request
     HttpResponse response = _httpClient->send(request);
 
-    std::vector<std::string> randomBlocks = parseJsonResponse(response.body);
-
-    for (const auto &randomBlock : randomBlocks) {
-        // TODO: Add base64 decode
-        printf("%s\n", randomBlock.c_str());
+    // Parse and decode response
+    std::vector<uint8_t> random;
+    std::vector<std::string> base64randomBlocks = parseJsonResponse(response.body);
+    for (const auto &base64randomBlock : base64randomBlocks) {
+        std::string randomBlockAsStr = base64_decode(base64randomBlock);
+        std::vector<uint8_t> randomBlock((uint8_t *)randomBlockAsStr.c_str(), (uint8_t *)randomBlockAsStr.c_str() + randomBlockAsStr.size());
+        random.insert(random.end(), randomBlock.begin(), randomBlock.end());
     }
 
     printf("%s\n", response.body.c_str());
 
-    return response.body;
+    return random;
     
 }
