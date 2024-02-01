@@ -1,10 +1,10 @@
-#include "inc/pkcs11.h"
+#include "pkcs11.h"
 #include "eaas.h"
 
 #include <dlfcn.h>
 #include <iostream>
 
-int main() {
+int legacy() {
     // Load the PKCS#11 library dynamically
     void* pkcs11Lib = dlopen(SOFTHSM2_LIBRARY_PATH, RTLD_NOW);
     if (!pkcs11Lib) {
@@ -73,4 +73,15 @@ int main() {
     dlclose(pkcs11Lib);
 
     return 0;
+}
+
+int main() {
+
+    const char* qryptToken = std::getenv("QRYPT_TOKEN");
+    EaaS eaasClient(qryptToken);
+    std::string response = eaasClient.requestEntropy(2);
+
+
+    return 0;
+    
 }

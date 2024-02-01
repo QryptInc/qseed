@@ -1,9 +1,15 @@
 cmake_minimum_required (VERSION 3.10)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 project (qseed CXX)
 
+find_package(RapidJSON)
+
 # build the executable
-add_executable (qseed eaas.cc qseed.cc)
+add_executable (qseed 
+    src/eaas.cc 
+    src/http_client.cc
+    src/qseed.cc
+)
 
 # include header files
 target_include_directories(qseed PRIVATE "./inc")

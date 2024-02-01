@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM --platform=linux/amd64 ubuntu:22.04
 
 # Update before installing anything
 RUN apt-get update
@@ -26,6 +26,16 @@ RUN cmake --version
 RUN apt-get -y install libcurl4-openssl-dev
 RUN apt-get -y install libssl-dev
 
+# Install rapidjson
+WORKDIR /workspaces
+RUN git clone https://github.com/Tencent/rapidjson/
+WORKDIR /workspaces/rapidjson
+RUN git submodule update --init
+WORKDIR /workspaces/rapidjson/build
+RUN cmake ..
+RUN make
+RUN make install
+
 # Configure + build + install SoftHSM
 WORKDIR /workspaces
 RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
@@ -36,5 +46,3 @@ WORKDIR /workspaces/softhsm-2.6.1
 RUN ./configure
 RUN make
 RUN make install
-
-# Build + install metering client
