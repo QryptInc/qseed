@@ -8,6 +8,7 @@ find_package(RapidJSON)
 add_executable (qseed 
     src/base64.cpp
     src/eaas.cc 
+    src/hsm_adapter.cpp
     src/http_client.cc
     src/qseed.cc
 )

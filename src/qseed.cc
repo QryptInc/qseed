@@ -1,86 +1,69 @@
 #include "pkcs11.h"
 #include "eaas.h"
+#include "hsm_adapter.h"
 #include "base64.h"
 
-#include <dlfcn.h>
-#include <iostream>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
-int legacy() {
-    // Load the PKCS#11 library dynamically
-    void* pkcs11Lib = dlopen(SOFTHSM2_LIBRARY_PATH, RTLD_NOW);
-    if (!pkcs11Lib) {
-        std::cerr << "Error loading PKCS#11 library: " << dlerror() << std::endl;
-        return 1;
-    }
+const unsigned long DEFAULT_QSEED_SIZE = 2;
 
-    // Get a pointer to the PKCS#11 function list
-    CK_FUNCTION_LIST_PTR pFunctionList;
-    CK_RV (*C_GetFunctionList)(CK_FUNCTION_LIST_PTR_PTR) =
-        (CK_RV(*)(CK_FUNCTION_LIST_PTR_PTR))dlsym(pkcs11Lib, "C_GetFunctionList");
+std::string getTimestamp() {
 
-    if (!C_GetFunctionList) {
-        std::cerr << "Error getting function pointer: " << dlerror() << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t time_t_now = std::chrono::system_clock::to_time_t(now);
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count();
 
-    CK_RV rv = C_GetFunctionList(&pFunctionList);
-    if (rv != CKR_OK) {
-        std::cerr << "Error getting function list: " << rv << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
+    std::stringstream ss;
+    ss << std::put_time(gmtime(&time_t_now), "%FT%T") << '.' << std::setfill('0') << std::setw(3) << millis << 'Z';
+    return ss.str();
 
-    // Initialize the library
-    rv = pFunctionList->C_Initialize(NULL);
-    if (rv != CKR_OK) {
-        std::cerr << "Error initializing PKCS#11 library: " << rv << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
-
-    // Open a session
-    CK_SESSION_HANDLE hSession;
-    rv = pFunctionList->C_OpenSession(0, CKF_SERIAL_SESSION, NULL, NULL, &hSession);
-    if (rv != CKR_OK) {
-        std::cerr << "Error opening session: " << rv << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
-
-    // Get random from Qrypt
-    std::string token = "abcdefg";
-    EaaS eaasClient("");
-    //std::string response = eaasClient.requestEntropy(1);    
-
-    // Seed random number generator
-    CK_BYTE seedData[] = {0x01, 0x02, 0x03, 0x04}; // Replace with your seed data
-    rv = pFunctionList->C_SeedRandom(hSession, seedData, sizeof(seedData));
-    if (rv != CKR_OK) {
-        std::cerr << "Error seeding random number generator: " << rv << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
-
-    // Finalize the library
-    rv = pFunctionList->C_Finalize(NULL);
-    if (rv != CKR_OK) {
-        std::cerr << "Error finalizing PKCS#11 library: " << rv << std::endl;
-        dlclose(pkcs11Lib);
-        return 1;
-    }
-
-    // Close the library
-    dlclose(pkcs11Lib);
-
-    return 0;
 }
 
 int main() {
 
+    // Check environment variables
     const char* qryptToken = std::getenv("QRYPT_TOKEN");
+    if (!qryptToken) {
+        throw std::runtime_error("QRYPT_TOKEN environment variable is not set");
+    }
+    unsigned long sizeInKBs = DEFAULT_QSEED_SIZE;
+    auto qseedSizeAsStr = std::getenv("QSEED_SIZE");
+    if (qseedSizeAsStr) {
+        sizeInKBs = std::stoi(qseedSizeAsStr);
+    }
+    const char* libraryFile = std::getenv("CRYPTOKI_LIB");
+    if (!libraryFile) {
+        throw std::runtime_error("CRYPTOKI_LIB environment variable is not set");
+    }
+    const char* slotIDAsStr = std::getenv("CRYPTOKI_SLOT_ID");
+    if (!slotIDAsStr) {
+        throw std::runtime_error("CRYPTOKI_SLOT_ID environment variable is not set");
+    }
+    std::string userPIN;
+    const char* userPINAsStr = std::getenv("CRYPTOKI_USER_PIN");
+    if (userPINAsStr) {
+        userPIN = userPINAsStr;
+    }
+
+    // Construct EaaS client
     EaaS eaasClient(qryptToken);
-    std::vector<uint8_t> random = eaasClient.requestEntropy(2);
+
+    // Construct HSM adapter
+    CryptokiConfig cryptokiConfig = {};
+    cryptokiConfig.libraryFile = libraryFile;
+    cryptokiConfig.slotID = std::stoi(slotIDAsStr);
+    cryptokiConfig.pin = userPIN;
+    CryptokiAdapter cryptokiAdapter(cryptokiConfig);
+
+    // Download quantum random
+    std::vector<uint8_t> random = eaasClient.requestEntropy(sizeInKBs);
+
+    // Inject quantum random into HSM
+    cryptokiAdapter.injectSeedRandom(random);
+
+    printf("[%s] Pushed %ld KBs of quantum seed material to the HSM.\n", getTimestamp().c_str(), sizeInKBs);
 
     std::string base64random = base64_encode(random.data(), random.size());
     printf("%s\n", base64random.c_str());
