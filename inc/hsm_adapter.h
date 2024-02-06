@@ -7,6 +7,9 @@
 #include <vector>
 #include <memory>
 
+/// <summary>
+/// Interface to interact with an HSM
+/// </summary>
 class HSMAdapter {
     
   public:
@@ -15,24 +18,32 @@ class HSMAdapter {
     HSMAdapter(const HSMAdapter &) = delete;
     HSMAdapter &operator=(const HSMAdapter &) = delete;
     
+    /// <summary>
+    /// Injects seed random into an HSM
+    /// </summary>
+    ///
+    /// <param name="random">The random to inject</param>
     virtual void injectSeedRandom(std::vector<uint8_t> random) = 0;
 
 };
 
+/// <summary>
+/// Cryptoki library configurations
+/// </summary>
 struct CryptokiConfig {
 
     /// <summary>
-    /// Shared object file of the Cryptoki library.
+    /// Shared object file of the Cryptoki library
     /// </summary>
     std::string libraryFile;
 
     /// <summary>
-    /// A logical reader that potentially contains a token.
+    /// A logical reader that potentially contains a token
     /// </summary>
     unsigned long slotID;
 
     /// <summary>
-    /// Personal Identification Number.
+    /// Personal Identification Number
     /// </summary>
     std::string pin;
 

@@ -1,4 +1,5 @@
-
+# Overview
+The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random.
 
 ## Build
 This section covers how to build and install the qseed application.
@@ -61,7 +62,7 @@ This section covers how to test the application with SoftHSM. The steps covered 
     No errors
     ```
 
-3.  Set environment variables
+3.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the first step. The CRYPTOKI_USER_PIN should be set to the user pin from the first step.
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
@@ -80,10 +81,13 @@ This section covers how to test the application with SoftHSM. The steps covered 
     ```
     Sample output is shown below.
     ```
-    [2024-02-06T20:51:17.681Z] Pushed 2 KBs of quantum seed material to the HSM.
+    [2024-02-06T22:46:42.973Z] Pushed 2 KBs of quantum seed material to the HSM.
+    [2024-02-06T22:46:53.150Z] Pushed 2 KBs of quantum seed material to the HSM.
+    [2024-02-06T22:47:03.314Z] Pushed 2 KBs of quantum seed material to the HSM.
     ```
 
 ## Setup with Thales Luna HSM
+TODO
 
 ## Open Questions
 Do we need a user pin for C_SeedRandom for Thales HSMs?

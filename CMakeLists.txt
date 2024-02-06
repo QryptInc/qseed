@@ -12,10 +12,10 @@ find_library(SOFTHSM2_LIBRARY NAMES softhsm2 REQUIRED HINTS /usr/local/lib/softh
 
 add_executable (qseed 
     src/base64.cpp
-    src/eaas.cc 
+    src/eaas.cpp
     src/hsm_adapter.cpp
-    src/http_client.cc
-    src/qseed.cc
+    src/http_client.cpp
+    src/qseed.cpp
 )
 
 target_include_directories(qseed PRIVATE 

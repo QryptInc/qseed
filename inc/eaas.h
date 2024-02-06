@@ -7,6 +7,9 @@
 #include <vector>
 #include <memory>
 
+/// <summary>
+/// Client abstraction to interact with Qrypt's Entropy as a Service (EaaS)
+/// </summary>
 class EaaS {
     
   public:
@@ -14,6 +17,11 @@ class EaaS {
     EaaS(const EaaS &) = delete;
     EaaS &operator=(const EaaS &) = delete;
     
+    /// <summary>
+    /// Performs the EaaS REST call and decodes the result into a byte vector
+    /// </summary>
+    ///
+    /// <param name="size">The amount of random to download in KBs</param>
     std::vector<uint8_t> requestEntropy(uint32_t size = 1);
 
   private:
@@ -22,4 +30,4 @@ class EaaS {
 
 };
 
-#endif /* EAAS_H */
+#endif

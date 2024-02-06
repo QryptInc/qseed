@@ -6,8 +6,10 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <thread>
 
 const unsigned long DEFAULT_QSEED_SIZE = 2;
+const unsigned long DEFAULT_QSEED_PERIOD = 10;
 
 std::string getTimestamp() {
 
@@ -33,6 +35,11 @@ int main() {
     if (qseedSizeAsStr) {
         sizeInKBs = std::stoi(qseedSizeAsStr);
     }
+    unsigned long periodInSecs = DEFAULT_QSEED_PERIOD;
+    auto qseedPeriodAsStr = std::getenv("QSEED_PERIOD");
+    if (qseedPeriodAsStr) {
+        periodInSecs = std::stoi(qseedPeriodAsStr);
+    }
     const char* libraryFile = std::getenv("CRYPTOKI_LIB");
     if (!libraryFile) {
         throw std::runtime_error("CRYPTOKI_LIB environment variable is not set");
@@ -57,13 +64,20 @@ int main() {
     cryptokiConfig.pin = userPIN;
     CryptokiAdapter cryptokiAdapter(cryptokiConfig);
 
-    // Download quantum random
-    std::vector<uint8_t> random = eaasClient.requestEntropy(sizeInKBs);
+    while(1) {
 
-    // Inject quantum random into HSM
-    cryptokiAdapter.injectSeedRandom(random);
+        // Download quantum random
+        std::vector<uint8_t> random = eaasClient.requestEntropy(sizeInKBs);
 
-    printf("[%s] Pushed %ld KBs of quantum seed material to the HSM.\n", getTimestamp().c_str(), sizeInKBs);
+        // Inject quantum random into HSM
+        cryptokiAdapter.injectSeedRandom(random);
+
+        printf("[%s] Pushed %ld KBs of quantum seed material to the HSM.\n", getTimestamp().c_str(), sizeInKBs);
+
+        // Sleep until next interval
+        std::this_thread::sleep_for(std::chrono::seconds(periodInSecs));
+
+    }
 
     return 0;
     

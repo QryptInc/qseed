@@ -10,8 +10,8 @@ find_package(GTest REQUIRED)
 add_executable(qseed_tests
     qseed_tests.cpp
     ../src/base64.cpp
-    ../src/eaas.cc
-    ../src/http_client.cc
+    ../src/eaas.cpp
+    ../src/http_client.cpp
 )
 
 target_include_directories(qseed_tests PRIVATE

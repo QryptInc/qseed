@@ -1,5 +1,5 @@
-#ifndef HTTP_H
-#define HTTP_H
+#ifndef HTTP_CLIENT_H
+#define HTTP_CLIENT_H
 
 #include <string>
 #include <vector>
@@ -54,9 +54,7 @@ struct HttpResponse {
 };
 
 /// <summary>
-/// Abstract base class for HTTP clients.
-///
-/// Instances of this class should not be created directly.
+/// Interface to interact with HTTP clients
 /// </summary>
 class HttpClient {
 
