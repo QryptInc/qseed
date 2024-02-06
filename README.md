@@ -1,4 +1,27 @@
-## Initialize SoftHSM
+
+
+## Build
+This section covers how to build and install the qseed application.
+
+```bash
+mkdir build && cd build
+cmake .. 
+make
+make install
+```
+
+## Build and Run GTests
+This section covers how to run the google tests.
+
+```bash
+mkdir build && cd build
+cmake -DENABLE_TESTS=ON .. 
+make
+test/qseed_tests
+```
+
+## Test using SoftHSM
+This section covers how to test the application with SoftHSM. The steps covered in the Build section above need to be completed first.
 
 1.  Initialize a new token using softhsm2-util tool.
     ```
@@ -38,22 +61,29 @@
     No errors
     ```
 
-## Build
-```bash
-mkdir build
-cd build
-cmake .. && make
-make install
-```
+3.  Set environment variables
+    ```bash
+    export QRYPT_TOKEN=qrypttokenfromportal
+    export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
+    export CRYPTOKI_SLOT_ID=384541823
+    export CRYPTOKI_USER_PIN=1234
+    ```
 
-## Installation
-1. Set environment variables
-```
-export QRYPT_TOKEN=qrypttokenfromportal
-export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
-export CRYPTOKI_SLOT_ID=384541823
-export CRYPTOKI_USER_PIN=1234
-```
+4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library
+    ```bash
+    export LD_LIBRARY_PATH=/usr/local/lib/softhsm:$LD_LIBRARY_PATH
+    ```
+
+5.  Run the executable
+    ```
+    qseed
+    ```
+    Sample output is shown below.
+    ```
+    [2024-02-06T20:51:17.681Z] Pushed 2 KBs of quantum seed material to the HSM.
+    ```
+
+## Setup with Thales Luna HSM
 
 ## Open Questions
 Do we need a user pin for C_SeedRandom for Thales HSMs?

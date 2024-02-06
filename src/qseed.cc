@@ -65,9 +65,6 @@ int main() {
 
     printf("[%s] Pushed %ld KBs of quantum seed material to the HSM.\n", getTimestamp().c_str(), sizeInKBs);
 
-    std::string base64random = base64_encode(random.data(), random.size());
-    printf("%s\n", base64random.c_str());
-
     return 0;
     
 }
