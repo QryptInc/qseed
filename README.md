@@ -1,7 +1,19 @@
 # Overview
-The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random.
+The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random. The download and injection are performed periodically.
 
-## Build
+## Configurations
+The following configurations can be set using environment variables.
+
+  | ENV | Description |
+  | --- | ------------|
+  | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
+  | QSEED_SIZE | Amount of seed random in KBs to inject into the HSM at the beginning of each time period. Defaults to 2. |
+  | QSEED_PERIOD | The time period in seconds between seed random injections. Defaults to 10. |
+  | CRYPTOKI_LIB | Cryptoki shared library file location. |
+  | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
+  | CRYPTOKI_USER_PIN | Cryptoki user PIN as defined in the PKCS11 specification. The application will skip session login if not provided. |
+  
+# Build
 This section covers how to build and install the qseed application.
 
 ```bash
@@ -11,7 +23,7 @@ make
 make install
 ```
 
-## Build and Run GTests
+# Build and Run GTests
 This section covers how to run the google tests.
 
 ```bash
@@ -21,7 +33,7 @@ make
 test/qseed_tests
 ```
 
-## Test using SoftHSM
+# Test using SoftHSM
 This section covers how to test the application with SoftHSM. The steps covered in the Build section above need to be completed first.
 
 1.  Initialize a new token using softhsm2-util tool.
@@ -70,12 +82,12 @@ This section covers how to test the application with SoftHSM. The steps covered 
     export CRYPTOKI_USER_PIN=1234
     ```
 
-4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library
+4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
     ```bash
     export LD_LIBRARY_PATH=/usr/local/lib/softhsm:$LD_LIBRARY_PATH
     ```
 
-5.  Run the executable
+5.  Run the executable.
     ```
     qseed
     ```
@@ -86,8 +98,6 @@ This section covers how to test the application with SoftHSM. The steps covered 
     [2024-02-06T22:47:03.314Z] Pushed 2 KBs of quantum seed material to the HSM.
     ```
 
-## Setup with Thales Luna HSM
-TODO
+# Setup with Thales Luna HSM
+WIP
 
-## Open Questions
-Do we need a user pin for C_SeedRandom for Thales HSMs?

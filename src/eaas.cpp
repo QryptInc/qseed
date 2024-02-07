@@ -74,9 +74,6 @@ std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
         random.insert(random.end(), randomBlock.begin(), randomBlock.end());
     }
 
-    // TODO: remove
-    //printf("%s\n", response.body.c_str());
-
     return random;
     
 }
