@@ -4,8 +4,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
-const uint32_t MIN_REQUEST = 1;
-const uint32_t MAX_REQUEST = 512;
+const uint32_t EAAS_MAX_REQUEST = 512;
 const std::string EAAS_FQDN = "https://api-eus.qrypt.com";
 
 std::vector<std::string> parseJsonResponse(std::string jsonResponse) {
@@ -44,8 +43,8 @@ std::vector<std::string> parseJsonResponse(std::string jsonResponse) {
 
 std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
 
-    // check size
-    if (size < MIN_REQUEST || size > MAX_REQUEST) {
+    // Check size
+    if (size == 0 || size > EAAS_MAX_REQUEST) {
         throw std::runtime_error("Entropy request size is not within the acceptable range");
     }
 
@@ -64,13 +63,16 @@ std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
 
     // Perform HTTP request
     HttpResponse response = _httpClient->send(request);
+    if (response.httpCode != 200) {
+        std::string errMsg = "Entropy request returned status code " + std::to_string(response.httpCode) + ". " + response.body;
+        throw std::runtime_error(errMsg);
+    }
 
     // Parse and decode response
     std::vector<uint8_t> random;
     std::vector<std::string> base64randomBlocks = parseJsonResponse(response.body);
     for (const auto &base64randomBlock : base64randomBlocks) {
-        std::string randomBlockAsStr = base64_decode(base64randomBlock);
-        std::vector<uint8_t> randomBlock((uint8_t *)randomBlockAsStr.c_str(), (uint8_t *)randomBlockAsStr.c_str() + randomBlockAsStr.size());
+        std::string randomBlock = base64_decode(base64randomBlock);
         random.insert(random.end(), randomBlock.begin(), randomBlock.end());
     }
 

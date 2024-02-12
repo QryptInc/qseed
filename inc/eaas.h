@@ -22,7 +22,7 @@ class EaaS {
     /// </summary>
     ///
     /// <param name="size">The amount of random to download in KBs</param>
-    std::vector<uint8_t> requestEntropy(uint32_t size = 1);
+    std::vector<uint8_t> requestEntropy(uint32_t size);
 
   private:
     std::string _token;

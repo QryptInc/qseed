@@ -23,7 +23,7 @@ class HSMAdapter {
     /// </summary>
     ///
     /// <param name="random">The random to inject</param>
-    virtual void injectSeedRandom(std::vector<uint8_t> random) = 0;
+    virtual void injectSeedRandom(const std::vector<uint8_t>& random) = 0;
 
 };
 
@@ -65,7 +65,7 @@ class CryptokiAdapter : public HSMAdapter {
     /// </summary>
     ///
     /// <param name="random">The random to inject</param>
-    void injectSeedRandom(std::vector<uint8_t> random) override;
+    void injectSeedRandom(const std::vector<uint8_t>& random) override;
 
   private:
     CryptokiConfig _config;

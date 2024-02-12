@@ -35,7 +35,7 @@ CryptokiAdapter::~CryptokiAdapter() {
     dlclose(_pkcs11Lib);
 }
 
-void CryptokiAdapter::injectSeedRandom(std::vector<uint8_t> random) {
+void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
 
     // Initialize the library
     CK_RV rv = _pFunctionList->C_Initialize(NULL);
@@ -55,7 +55,7 @@ void CryptokiAdapter::injectSeedRandom(std::vector<uint8_t> random) {
     if (!_config.pin.empty()) {
         // Login to session
         CK_UTF8CHAR_PTR pin = (uint8_t*)_config.pin.c_str();
-        rv = C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
+        rv = _pFunctionList->C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
         if (rv != CKR_OK) {
             std::string errMsg = "C_Login Error: " + std::to_string(rv);
             throw std::runtime_error(errMsg);
@@ -63,9 +63,16 @@ void CryptokiAdapter::injectSeedRandom(std::vector<uint8_t> random) {
     }
 
     // Seed random number generator
-    rv = _pFunctionList->C_SeedRandom(hSession, random.data(), random.size());
+    rv = _pFunctionList->C_SeedRandom(hSession, (uint8_t*)random.data(), random.size());
     if (rv != CKR_OK) {
         std::string errMsg = "C_SeedRandom Error: " + std::to_string(rv);
+        throw std::runtime_error(errMsg);
+    }
+
+    // Close session
+    rv = _pFunctionList->C_CloseSession(hSession);
+    if (rv != CKR_OK) {
+        std::string errMsg = "C_CloseSession Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);
     }
 

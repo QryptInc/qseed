@@ -8,7 +8,7 @@ option(ENABLE_TESTS "Generate a test executable" OFF)
 
 find_package(CURL REQUIRED)
 find_package(RapidJSON REQUIRED)
-find_library(SOFTHSM2_LIBRARY NAMES softhsm2 REQUIRED HINTS /usr/local/lib/softhsm)
+message(STATUS "CRYPTOKI_LIB: $ENV{CRYPTOKI_LIB}")
 
 add_executable (qseed 
     src/base64.cpp
@@ -26,7 +26,7 @@ target_include_directories(qseed PRIVATE
 
 target_link_libraries(qseed 
     ${CMAKE_DL_LIBS} 
-    ${SOFTHSM2_LIBRARY}
+    $ENV{CRYPTOKI_LIB}
     CURL::libcurl
 )
 

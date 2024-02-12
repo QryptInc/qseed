@@ -1,42 +1,76 @@
 # Overview
 The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random. The download and injection are performed periodically.
 
-## Configurations
-The following configurations can be set using environment variables.
-
-  | ENV | Description |
-  | --- | ------------|
-  | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
-  | QSEED_SIZE | Amount of seed random in KBs to inject into the HSM at the beginning of each time period. Defaults to 2. |
-  | QSEED_PERIOD | The time period in seconds between seed random injections. Defaults to 10. |
-  | CRYPTOKI_LIB | Cryptoki shared library file location. |
-  | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
-  | CRYPTOKI_USER_PIN | Cryptoki user PIN as defined in the PKCS11 specification. The application will skip session login if not provided. |
+See https://docs.qrypt.com/eaas/pkcs11/ for more information.
   
 # Build
-This section covers how to build and install the qseed application.
+This section covers how to build and install the qseed application. Note that you will need an installed cryptoki library on your system.
 
-```bash
-mkdir build && cd build
-cmake .. 
-make
-make install
-```
+1.  Create and navigate to a build directory.
+    ```bash
+    mkdir build && cd build
+    ```
 
-# Build and Run GTests
-This section covers how to run the google tests.
+2.  Set the CRYPTOKI_LIB environment variable prior to building. Example with SoftHSM is shown below.
+    ```bash
+    export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
+    ```
+
+3.  Configure and build the qseed application.
+    ```bash
+    cmake .. 
+    cmake --build .
+    ```
+
+4.  Install the qseed application.
+    ```bash
+    cmake --install .
+    ```
+
+# Run 
+This section covers how to start the qseed application.
+
+1.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
+
+    | ENV | Description |
+    | --- | ------------|
+    | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
+    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 524,288 bytes (512 kib). Defaults to 64,000. |
+    | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
+    | CRYPTOKI_LIB | Cryptoki shared library file location. |
+    | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
+    | CRYPTOKI_USER_PIN | Cryptoki user PIN as defined in the PKCS11 specification. The application will skip session login if not provided. |
+
+2.  Run the executable.
+    ```
+    qseed
+    ```
+    Sample output is shown below.
+    ```
+    [2024-02-12T20:56:10.191Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-12T20:56:20.389Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-12T20:56:30.573Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    ```
+
+# Testing
+This section covers how to test the qseed application.
+
+## Build and Run GTests
+This section covers how to build and run the google tests.
 
 ```bash
 mkdir build && cd build
 cmake -DENABLE_TESTS=ON .. 
-make
+cmake --build .
 test/qseed_tests
 ```
 
-# Test using SoftHSM
-This section covers how to test the application with SoftHSM. The steps covered in the Build section above need to be completed first.
+## Test using SoftHSM
+This section covers how to test the application with SoftHSM.
 
-1.  Initialize a new token using softhsm2-util tool.
+1.  Follow the steps in the Build section above.
+
+2.  Initialize a new token using softhsm2-util tool.
     ```
     softhsm2-util --init-token --slot 0 --label "My First Token"
     ```
@@ -51,7 +85,7 @@ This section covers how to test the application with SoftHSM. The steps covered 
     The token has been initialized and is reassigned to slot 384541823
     ```
 
-2.  Test the module using the pkcs11-tool and the reassigned slot id from the previous step.
+3.  Test the module using the pkcs11-tool and the reassigned slot id from the previous step.
     ```
     pkcs11-tool --module /usr/local/lib/softhsm/libsofthsm2.so --slot 384541823 -l -t
     ```
@@ -74,7 +108,7 @@ This section covers how to test the application with SoftHSM. The steps covered 
     No errors
     ```
 
-3.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the first step. The CRYPTOKI_USER_PIN should be set to the user pin from the first step.
+4.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_USER_PIN should be set to the user pin from the second step.
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
@@ -82,22 +116,19 @@ This section covers how to test the application with SoftHSM. The steps covered 
     export CRYPTOKI_USER_PIN=1234
     ```
 
-4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
+5.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
     ```bash
     export LD_LIBRARY_PATH=/usr/local/lib/softhsm:$LD_LIBRARY_PATH
     ```
 
-5.  Run the executable.
+6.  Run the executable.
     ```
     qseed
     ```
     Sample output is shown below.
     ```
-    [2024-02-06T22:46:42.973Z] Pushed 2 KBs of quantum seed material to the HSM.
-    [2024-02-06T22:46:53.150Z] Pushed 2 KBs of quantum seed material to the HSM.
-    [2024-02-06T22:47:03.314Z] Pushed 2 KBs of quantum seed material to the HSM.
+    [2024-02-12T20:56:10.191Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-12T20:56:20.389Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-12T20:56:30.573Z] Pushed 64000 bytes of quantum seed material to the HSM.
     ```
-
-# Setup with Thales Luna HSM
-WIP
 

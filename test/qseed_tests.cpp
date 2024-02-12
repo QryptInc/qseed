@@ -35,7 +35,7 @@ TEST_F(EaaSTest, InvalidRequestSize) {
 
 }
 
-TEST_F(EaaSTest, 1KBRequest) {
+TEST_F(EaaSTest, 1KiBRequest) {
 
     EaaS eaasClient(_qryptToken);
     std::vector<uint8_t> random = eaasClient.requestEntropy(1);
@@ -49,7 +49,7 @@ TEST_F(EaaSTest, 1KBRequest) {
 
 }
 
-TEST_F(EaaSTest, 512KBRequest) {
+TEST_F(EaaSTest, 512KiBRequest) {
 
     EaaS eaasClient(_qryptToken);
     std::vector<uint8_t> random = eaasClient.requestEntropy(512);
