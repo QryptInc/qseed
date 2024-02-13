@@ -35,7 +35,7 @@ This section covers how to start the qseed application.
     | ENV | Description |
     | --- | ------------|
     | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
-    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 524,288 bytes (512 kib). Defaults to 64,000. |
+    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 524,288 bytes (512 kib). Defaults to 48. |
     | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
     | CRYPTOKI_LIB | Cryptoki shared library file location. |
     | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
@@ -47,9 +47,9 @@ This section covers how to start the qseed application.
     ```
     Sample output is shown below.
     ```
-    [2024-02-12T20:56:10.191Z] Pushed 64000 bytes of quantum seed material to the HSM.
-    [2024-02-12T20:56:20.389Z] Pushed 64000 bytes of quantum seed material to the HSM.
-    [2024-02-12T20:56:30.573Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:26.955Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:37.127Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:47.303Z] Pushed 48 bytes of quantum seed material to the HSM.
     ```
 
 # Testing
@@ -127,8 +127,8 @@ This section covers how to test the application with SoftHSM.
     ```
     Sample output is shown below.
     ```
-    [2024-02-12T20:56:10.191Z] Pushed 64000 bytes of quantum seed material to the HSM.
-    [2024-02-12T20:56:20.389Z] Pushed 64000 bytes of quantum seed material to the HSM.
-    [2024-02-12T20:56:30.573Z] Pushed 64000 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:26.955Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:37.127Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-13T17:47:47.303Z] Pushed 48 bytes of quantum seed material to the HSM.
     ```
 
