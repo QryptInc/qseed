@@ -1,23 +1,39 @@
-cmake_minimum_required (VERSION 3.10)
-set(CMAKE_CXX_STANDARD 11)
-project (qseed CXX)
+cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# build the executable
-add_executable (qseed eaas.cc qseed.cc)
+project(qseed CXX)
+option(ENABLE_TESTS "Generate a test executable" OFF)
 
-# include header files
-target_include_directories(qseed PRIVATE "./inc")
+find_package(CURL REQUIRED)
+find_package(RapidJSON REQUIRED)
+message(STATUS "CRYPTOKI_LIB: $ENV{CRYPTOKI_LIB}")
 
-# Set LIBRARY_PATH macro for get_random.cpp
-target_compile_definitions(qseed PRIVATE LIBRARY_PATH="/usr/local/lib/softhsm/libsofthsm2.so")
+add_executable (qseed 
+    src/base64.cpp
+    src/eaas.cpp
+    src/hsm_adapter.cpp
+    src/http_client.cpp
+    src/qseed.cpp
+)
 
-# link to dependent libraries
-find_library(CURL_LIBRARY NAMES curl REQUIRED HINTS /usr/lib/x86_64-linux-gnu)
-find_library(SOFTHSM2_LIBRARY NAMES softhsm2 REQUIRED HINTS /usr/local/lib/softhsm)
-target_link_libraries(qseed ${CMAKE_DL_LIBS} ${SOFTHSM2_LIBRARY} ${CURL_LIBRARY})
+target_include_directories(qseed PRIVATE 
+    "./inc"
+    ${CURL_INCLUDE_DIR}
+    ${Rapidjson_INCLUDE_DIRS}
+)
 
-# pass the location of softhsm to use in the code
-target_compile_definitions(qseed PRIVATE SOFTHSM2_LIBRARY_PATH="${SOFTHSM2_LIBRARY}")
+target_link_libraries(qseed 
+    ${CMAKE_DL_LIBS} 
+    $ENV{CRYPTOKI_LIB}
+    CURL::libcurl
+)
 
-# install to usr/local/bin
-install (TARGETS qseed DESTINATION bin)
+# Install to usr/local/bin
+install(TARGETS qseed DESTINATION bin)
+
+# Build tests if enabled
+if(ENABLE_TESTS)
+    add_subdirectory(test)
+endif()
