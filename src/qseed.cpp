@@ -1,4 +1,3 @@
-#include "pkcs11.h"
 #include "eaas.h"
 #include "hsm_adapter.h"
 #include "base64.h"

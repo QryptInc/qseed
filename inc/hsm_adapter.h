@@ -1,7 +1,7 @@
 #ifndef HSM_ADAPTER_H
 #define HSM_ADAPTER_H
 
-#include "pkcs11.h"
+#include "cryptoki.h"
 
 #include <string>
 #include <vector>
