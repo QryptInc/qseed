@@ -98,7 +98,7 @@ void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
     if (!_config.pin.empty()) {
         // Login to session
         CK_UTF8CHAR_PTR pin = (uint8_t*)_config.pin.c_str();
-        rv = _pFunctionList->C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
+        rv = _pFunctionList->C_Login(hSession, CKU_SO, pin, strlen((char*)pin));
         if (rv != CKR_OK) {
             std::string errMsg = "C_Login Error: " + std::to_string(rv);
             throw std::runtime_error(errMsg);

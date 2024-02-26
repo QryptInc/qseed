@@ -11,26 +11,25 @@ This section covers how to build and install the qseed application. Note that yo
     mkdir build && cd build
     ```
 
-2.  Set the CRYPTOKI_LIB environment variable prior to building. Example with SoftHSM is shown below.
-    ```bash
-    export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
-    ```
-
-3.  Configure and build the qseed application.
+2.  Configure and build the qseed application.
     ```bash
     cmake .. 
     cmake --build .
     ```
 
-4.  Install the qseed application.
+3.  Install the qseed application.
     ```bash
     cmake --install .
     ```
 
-# Run 
-This section covers how to start the qseed application.
+# Quickstart with Thales HSMs 
+This section covers how to start the qseed application for Thales Network Luna 7 HSM.
 
-1.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
+1.  Follow the steps in the Build section above.
+
+2.  Initialize a new token using ckdemo utility provided by Thales.
+
+3.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
 
     | ENV | Description |
     | --- | ------------|
@@ -41,9 +40,9 @@ This section covers how to start the qseed application.
     | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
     | CRYPTOKI_USER_PIN | Cryptoki user PIN as defined in the PKCS11 specification. The application will skip session login if not provided. |
 
-2.  Run the executable.
+4.  Run the executable. Note you may need to run the application as root to properly work with Thales cryptoki library.
     ```
-    qseed
+    sudo qseed
     ```
     Sample output is shown below.
     ```
