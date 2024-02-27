@@ -19,6 +19,11 @@ class HSMAdapter {
     HSMAdapter &operator=(const HSMAdapter &) = delete;
     
     /// <summary>
+    /// Prints slot description information
+    /// </summary>
+    virtual void printSlotInfo() = 0;
+
+    /// <summary>
     /// Injects seed random into an HSM
     /// </summary>
     ///
@@ -59,6 +64,11 @@ class CryptokiAdapter : public HSMAdapter {
     virtual ~CryptokiAdapter();
     CryptokiAdapter(const CryptokiAdapter &) = delete;
     CryptokiAdapter &operator=(const CryptokiAdapter &) = delete;
+
+    /// <summary>
+    /// Prints slot description information
+    /// </summary>
+    void printSlotInfo() override;
 
     /// <summary>
     /// Calls C_SeedRandom in the Crypotoki interface

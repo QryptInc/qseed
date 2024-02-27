@@ -1,7 +1,7 @@
 # Overview
 The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random. The download and injection are performed periodically.
 
-See https://docs.qrypt.com/eaas/pkcs11/ for more information.
+See [Seed PKCS#11 HSMs](https://docs.qrypt.com/eaas/pkcs11/) for more information.
   
 # Build
 This section covers how to build and install the qseed application. Note that you will need an installed cryptoki library on your system.
@@ -22,12 +22,12 @@ This section covers how to build and install the qseed application. Note that yo
     cmake --install .
     ```
 
-# Quickstart with Thales HSMs 
+# Quickstart using Thales HSMs 
 This section covers how to start the qseed application for Thales Network Luna 7 HSM.
 
-1.  Follow the steps in the Build section above.
+1.  Initialize a new token using [ckdemo](https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Utilities/ckdemo/ckdemo.htm) utility provided by Thales. Run [TOKEN Menu Function](https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Utilities/ckdemo/token_functions.htm) number 6 (Init Token). You will need to set the Partition SO role PIN. The Partition SO role PIN will be needed for the qseed application configuration.
 
-2.  Initialize a new token using ckdemo utility provided by Thales.
+2.  Follow the steps in the Build section above.
 
 3.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
 
@@ -38,11 +38,18 @@ This section covers how to start the qseed application for Thales Network Luna 7
     | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
     | CRYPTOKI_LIB | Cryptoki shared library file location. |
     | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
-    | CRYPTOKI_USER_PIN | Cryptoki user PIN as defined in the PKCS11 specification. The application will skip session login if not provided. |
+    | CRYPTOKI_SO_PIN | Cryptoki partition SO role PIN as defined in the PKCS11 specification. |
 
-4.  Run the executable. Note you may need to run the application as root to properly work with Thales cryptoki library.
+    ```bash
+    export QRYPT_TOKEN=qrypttokenfromportal
+    export CRYPTOKI_LIB=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
+    export CRYPTOKI_SLOT_ID=0
+    export CRYPTOKI_SO_PIN=1234
     ```
-    sudo qseed
+
+4.  Run the executable. Note you will need to run the application as root if root privileges are required for the Thales cryptoki library.
+    ```
+    sudo -E qseed
     ```
     Sample output is shown below.
     ```
@@ -107,12 +114,12 @@ This section covers how to test the application with SoftHSM.
     No errors
     ```
 
-4.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_USER_PIN should be set to the user pin from the second step.
+4.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_SO_PIN should be set to the SO PIN from the second step.
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
     export CRYPTOKI_SLOT_ID=384541823
-    export CRYPTOKI_USER_PIN=1234
+    export CRYPTOKI_SO_PIN=1234
     ```
 
 5.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.

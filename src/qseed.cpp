@@ -72,12 +72,11 @@ CryptokiConfig getCryptokiConfig() {
     }
     cryptokiConfig.slotID = std::stoi(slotIDAsStr);
 
-    std::string userPIN;
-    const char* userPINAsStr = std::getenv("CRYPTOKI_USER_PIN");
-    if (userPINAsStr) {
-        userPIN = userPINAsStr;
+    const char* pinAsStr = std::getenv("CRYPTOKI_SO_PIN");
+    if (!pinAsStr) {
+        throw std::runtime_error("CRYPTOKI_SO_PIN environment variable is not set");
     }
-    cryptokiConfig.pin = userPIN;
+    cryptokiConfig.pin = pinAsStr;
 
     return cryptokiConfig;
 
@@ -105,6 +104,7 @@ int main() {
     // Construct HSM adapter
     CryptokiConfig cryptokiConfig = getCryptokiConfig();
     CryptokiAdapter cryptokiAdapter(cryptokiConfig);
+    cryptokiAdapter.printSlotInfo();
 
     while(1) {
 
