@@ -34,7 +34,7 @@ This section covers how to start the qseed application for Thales Network Luna 7
     | ENV | Description |
     | --- | ------------|
     | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
-    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 524,288 bytes (512 kib). Defaults to 48. |
+    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 65,536 (64 kib). Defaults to 48. |
     | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
     | CRYPTOKI_LIB | Cryptoki shared library file location. |
     | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
