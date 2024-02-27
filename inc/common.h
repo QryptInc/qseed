@@ -5,4 +5,8 @@
 
 std::string trimWhitespace(std::string str);
 
+std::string getTimestamp();
+
+// TODO - Add logging function
+
 #endif

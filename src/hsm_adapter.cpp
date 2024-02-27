@@ -69,7 +69,7 @@ void CryptokiAdapter::printSlotInfo() {
     CK_TOKEN_INFO tokenInfo;
     rv = _pFunctionList->C_GetTokenInfo(_config.slotID, &tokenInfo);
     if (rv == CKR_TOKEN_NOT_PRESENT) {
-        printf("SLOT 0x%lx (%s): NO TOKEN\n", _config.slotID, slotDescription.c_str());
+        printf("[%s] SLOT #%ld (%s): NO TOKEN\n", getTimestamp().c_str(), _config.slotID, slotDescription.c_str());
         return;
     }
     if (rv != CKR_OK) {
@@ -77,7 +77,7 @@ void CryptokiAdapter::printSlotInfo() {
         throw std::runtime_error(errMsg);
     }
     std::string tokenLabel = trimWhitespace(std::string((char*)tokenInfo.label, sizeof(tokenInfo.label)));
-    printf("SLOT 0x%lx (%s): %s\n", _config.slotID, slotDescription.c_str(), tokenLabel.c_str());
+    printf("[%s] SLOT #%ld (%s): %s\n", getTimestamp().c_str(), _config.slotID, slotDescription.c_str(), tokenLabel.c_str());
 
 }
 
