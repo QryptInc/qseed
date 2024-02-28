@@ -12,10 +12,7 @@ RUN apt-get -y install git vim wget
 # Install developer dependencies
 RUN apt-get -y install libssl-dev libcurl4-openssl-dev rapidjson-dev libgtest-dev 
 
-# Install PKCS11 Tool
-RUN apt-get -y install opensc
-
-# Configure + build + install SoftHSM
+# Install SoftHSM
 WORKDIR /workspaces
 RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
 RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz.sha256

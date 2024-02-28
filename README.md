@@ -4,20 +4,25 @@ The qseed application downloads quantum entropy from Qrypt's EaaS and injects it
 See [Seed PKCS#11 HSMs](https://docs.qrypt.com/eaas/pkcs11/) for more information.
   
 # Build
-This section covers how to build and install the qseed application. Note that you will need an installed cryptoki library on your system.
+This section covers how to build and install the qseed application. 
 
-1.  Create and navigate to a build directory.
+1.  Make sure you have the following library dependencies installed on your system. See the provided dockerfiles for installation details.
+    - cryptoki library (ex. SoftHSM or Thales libCryptoki2)
+    - libcurl
+    - rapidjson
+
+2.  Create and navigate to a build directory.
     ```bash
     mkdir build && cd build
     ```
 
-2.  Configure and build the qseed application.
+3.  Configure and build the qseed application.
     ```bash
     cmake .. 
     cmake --build .
     ```
 
-3.  Install the qseed application.
+4.  Install the qseed application.
     ```bash
     cmake --install .
     ```
@@ -25,11 +30,26 @@ This section covers how to build and install the qseed application. Note that yo
 # Quickstart using Thales HSMs 
 This section covers how to start the qseed application for Thales Network Luna 7 HSM.
 
-1.  Initialize a new token using [ckdemo](https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Utilities/ckdemo/ckdemo.htm) utility provided by Thales. Run [TOKEN Menu Function](https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Utilities/ckdemo/token_functions.htm) number 6 (Init Token). You will need to set the Partition SO role PIN. The Partition SO role PIN will be needed for the qseed application configuration.
+1.  Install the Thales Client software that includes the cryptoki library on the client machine. 
 
-2.  Follow the steps in the Build section above.
+    Follow the instructions provided by Thales. Note by default the Thales installation script will install the software in /usr/safenet/lunaclient.
 
-3.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
+2.  Establish a connection between the client and the Thales Network Luna 7 HSM. 
+
+    Follow the instructions provided by Thales. This can be accomplished using the [lunacm](https://thalesdocs.com/gphsm/luna/7/docs/network/Content/lunacm/commands/commands.htm) application located at /usr/safenet/lunaclient/bin/lunacm. Run the `clientconfig deploy` command.
+
+    ```bash
+    sudo /usr/safenet/lunaclient/bin/lunacm
+    lunacm:>clientconfig deploy -server <IP or Hostname of Luna appliance> –user <appliance username> -password <appliance password> -client <client name to create>  -partition <partition name>
+    ```
+
+3.  Create a token on the Thales Network Luna 7 HSM.
+
+    Follow the instructions provided by Thales. When you create a token, you will be prompted to select a slot number and set a partition SO role PIN. The selected slot number and partition SO role PIN will be needed for the qseed application configuration.
+    
+4.  Build and install the qseed application. Follow the steps in the Build section above.
+
+5.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
 
     | ENV | Description |
     | --- | ------------|
@@ -47,7 +67,7 @@ This section covers how to start the qseed application for Thales Network Luna 7
     export CRYPTOKI_SO_PIN=1234
     ```
 
-4.  Run the executable. Note you will need to run the application as root if root privileges are required for the Thales cryptoki library.
+6.  Run the executable. Note you need to run the application as root if root privileges are required for the Thales cryptoki library.
     ```
     sudo -E qseed
     ```
@@ -64,12 +84,20 @@ This section covers how to test the qseed application.
 ## Build and Run GTests
 This section covers how to build and run the google tests.
 
-```bash
-mkdir build && cd build
-cmake -DENABLE_TESTS=ON .. 
-cmake --build .
-test/qseed_tests
-```
+1.  Make sure you have gtest installed on your system. See the provided dockerfiles for installation details.
+
+2.  Create and navigate to a build directory. Configure and build the qseed test application.
+    ```bash
+    mkdir build && cd 
+    cmake -DENABLE_TESTS=ON .. 
+    cmake --build .
+    ```
+
+3.  Run the qseed test application.
+    ```bash
+    export QRYPT_TOKEN=qrypttokenfromportal
+    test/qseed_tests
+    ```
 
 ## Test using SoftHSM
 This section covers how to test the application with SoftHSM.
@@ -91,30 +119,7 @@ This section covers how to test the application with SoftHSM.
     The token has been initialized and is reassigned to slot 384541823
     ```
 
-3.  Test the module using the pkcs11-tool and the reassigned slot id from the previous step.
-    ```
-    pkcs11-tool --module /usr/local/lib/softhsm/libsofthsm2.so --slot 384541823 -l -t
-    ```
-    Sample output is shown below.
-    ```
-    Using slot 0 with a present token (0x16eba47f)
-    Logging in to "My First Token".
-    Please enter User PIN: 
-    C_SeedRandom() and C_GenerateRandom():
-      seems to be OK
-    Digests:
-      all 4 digest functions seem to work
-      MD5: OK
-      SHA-1: OK
-    Signatures: not implemented
-    Verify (currently only for RSA)
-      No private key found for testing
-    Unwrap: not implemented
-    Decryption (currently only for RSA)
-    No errors
-    ```
-
-4.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_SO_PIN should be set to the SO PIN from the second step.
+3.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_SO_PIN should be set to the SO PIN from the second step.
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
@@ -122,12 +127,12 @@ This section covers how to test the application with SoftHSM.
     export CRYPTOKI_SO_PIN=1234
     ```
 
-5.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
+4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
     ```bash
     export LD_LIBRARY_PATH=/usr/local/lib/softhsm:$LD_LIBRARY_PATH
     ```
 
-6.  Run the executable.
+5.  Run the executable.
     ```
     qseed
     ```
