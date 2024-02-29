@@ -3,16 +3,14 @@ FROM --platform=linux/amd64 ubuntu:22.04
 # Update before installing anything
 RUN apt-get update
 
-# Install gcc, make, etc
+# Install build tools
 RUN apt-get -y install build-essential cmake
 
 # Install essentials
 RUN apt-get -y install git vim wget
 
-# Install developer dependencies
-RUN apt-get -y install libssl-dev libcurl4-openssl-dev rapidjson-dev libgtest-dev 
-
 # Install SoftHSM
+RUN apt-get -y install libssl-dev
 WORKDIR /workspaces
 RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
 RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz.sha256
@@ -22,3 +20,9 @@ WORKDIR /workspaces/softhsm-2.6.1
 RUN ./configure
 RUN make
 RUN make install
+
+# Install libcurl and rapidjson
+RUN apt-get -y install libcurl4-openssl-dev rapidjson-dev
+
+# Install gtest
+RUN apt-get -y install libgtest-dev 

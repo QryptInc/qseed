@@ -1,13 +1,25 @@
 FROM --platform=linux/amd64 redhat/ubi8:8.9
 
-# Install gcc, make, etc
-RUN yum -y install gcc gcc-c++ glibc-devel make cmake
-
 # Install essentials
 RUN yum -y install git vim wget
 
-# Install openssl and libcurl
-RUN yum -y install openssl-devel libcurl-devel 
+# Install build tools
+RUN yum -y install gcc gcc-c++ glibc-devel make cmake
+
+# Install SoftHSM
+RUN yum -y install openssl-devel
+WORKDIR /workspaces
+RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
+RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz.sha256
+RUN sha256sum --check softhsm-2.6.1.tar.gz.sha256
+RUN tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
+WORKDIR /workspaces/softhsm-2.6.1
+RUN ./configure
+RUN make
+RUN make install
+
+# Install libcurl
+RUN yum -y install libcurl-devel 
 
 # Install rapidjson
 WORKDIR /workspaces
@@ -26,15 +38,4 @@ RUN tar -xzvf v1.14.0.tar.gz && rm v1.14.0.tar.gz
 WORKDIR /workspaces/googletest-1.14.0/build
 RUN cmake -DMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr .. 
 RUN make 
-RUN make install
-
-# Install SoftHSM
-WORKDIR /workspaces
-RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
-RUN wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz.sha256
-RUN sha256sum --check softhsm-2.6.1.tar.gz.sha256
-RUN tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
-WORKDIR /workspaces/softhsm-2.6.1
-RUN ./configure
-RUN make
 RUN make install

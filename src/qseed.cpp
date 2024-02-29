@@ -7,7 +7,7 @@
 #include <thread>
 #include <stdexcept>
 
-const uint32_t MAX_QSEED_SIZE = 64*1024;            // 64 kib
+const uint32_t MAX_QSEED_SIZE = 64*1024;            // 64 KiB
 const uint32_t MAX_QSEED_PERIOD = 60*60*24*365;     // 1 year
 const uint32_t DEFAULT_QSEED_SIZE = 48;
 const uint32_t DEFAULT_QSEED_PERIOD = 10;
