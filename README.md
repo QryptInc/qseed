@@ -3,6 +3,13 @@ The qseed application downloads quantum entropy from Qrypt's EaaS and injects it
 
 See [Seed PKCS#11 HSMs](https://docs.qrypt.com/eaas/pkcs11/) for more information.
   
+## Table of Contents
+1. [Build](#build)
+2. [Quickstart using Thales HSMs](#quickstart-using-thales-hsms)
+3. [Test](#test)
+    1. [Build and Run GTests](#build-and-run-gtests)
+    2. [Test using SoftHSM](#test-using-softhsm)
+
 # Build
 This section covers how to build and install the qseed application. 
 
@@ -45,11 +52,15 @@ This section covers how to start the qseed application for Thales Network Luna 7
 
 3.  Create a token on the Thales Network Luna 7 HSM.
 
-    Follow the instructions provided by Thales. When you create a token, you will be prompted to select a slot number and set a partition SO role PIN. The selected slot number and partition SO role PIN will be needed for the qseed application configuration.
-    
-4.  Build and install the qseed application. Follow the steps in the Build section above.
+    Follow the instructions provided by Thales. When you create a token, you will be prompted to select a slot number and set a partition SO role PIN. The selected slot number will be needed for the qseed application configuration. The partition SO role PIN will be needed to create a crypto user role PIN.
 
-5.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
+4.  Create a crypto user role PIN on the Thales Network Luna 7 HSM.
+
+    Follow the instructions provided by Thales. The crypto user role PIN will be needed for the qseed application configuration.
+    
+5.  Build and install the qseed application. Follow the steps in the Build section above.
+
+6.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
 
     | ENV | Description |
     | --- | ------------|
@@ -58,27 +69,28 @@ This section covers how to start the qseed application for Thales Network Luna 7
     | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
     | CRYPTOKI_LIB | Cryptoki shared library file location. |
     | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
-    | CRYPTOKI_SO_PIN | Cryptoki partition SO role PIN as defined in the PKCS11 specification. |
+    | CRYPTOKI_USER_PIN | Cryptoki crypto user role PIN as defined in the PKCS11 specification. |
 
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
     export CRYPTOKI_SLOT_ID=0
-    export CRYPTOKI_SO_PIN=1234
+    export CRYPTOKI_USER_PIN=1234
     ```
 
-6.  Run the executable. Note you need to run the application as root if root privileges are required for the Thales cryptoki library.
+7.  Run the executable. Note you need to run the application as root if root privileges are required for the Thales cryptoki library.
     ```
     sudo -E qseed
     ```
     Sample output is shown below.
     ```
-    [2024-02-13T17:47:26.955Z] Pushed 48 bytes of quantum seed material to the HSM.
-    [2024-02-13T17:47:37.127Z] Pushed 48 bytes of quantum seed material to the HSM.
-    [2024-02-13T17:47:47.303Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:02:40.280Z] SLOT #0 (Net Token Slot): token-new
+    [2024-02-29T15:02:40.842Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:02:51.349Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:03:01.904Z] Pushed 48 bytes of quantum seed material to the HSM.
     ```
 
-# Testing
+# Test
 This section covers how to test the qseed application.
 
 ## Build and Run GTests
@@ -116,15 +128,15 @@ This section covers how to test the application with SoftHSM.
     === User PIN (4-255 characters) ===
     Please enter user PIN: ****
     Please reenter user PIN: ****
-    The token has been initialized and is reassigned to slot 384541823
+    The token has been initialized and is reassigned to slot 824959035
     ```
 
-3.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_SO_PIN should be set to the SO PIN from the second step.
+3.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_USER_PIN should be set to the user PIN from the second step.
     ```bash
     export QRYPT_TOKEN=qrypttokenfromportal
     export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
-    export CRYPTOKI_SLOT_ID=384541823
-    export CRYPTOKI_SO_PIN=1234
+    export CRYPTOKI_SLOT_ID=824959035
+    export CRYPTOKI_USER_PIN=1234
     ```
 
 4.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
@@ -138,8 +150,9 @@ This section covers how to test the application with SoftHSM.
     ```
     Sample output is shown below.
     ```
-    [2024-02-13T17:47:26.955Z] Pushed 48 bytes of quantum seed material to the HSM.
-    [2024-02-13T17:47:37.127Z] Pushed 48 bytes of quantum seed material to the HSM.
-    [2024-02-13T17:47:47.303Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:49:11.050Z] SLOT #824959035 (SoftHSM slot ID 0x312be03b): My First Token
+    [2024-02-29T15:49:11.316Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:49:21.515Z] Pushed 48 bytes of quantum seed material to the HSM.
+    [2024-02-29T15:49:31.702Z] Pushed 48 bytes of quantum seed material to the HSM.
     ```
 

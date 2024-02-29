@@ -20,3 +20,7 @@ std::string getTimestamp() {
     return ss.str();
 
 }
+
+void infoLog(std::string message) {
+    printf("[%s] %s\n", getTimestamp().c_str(), message.c_str());
+}

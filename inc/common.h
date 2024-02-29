@@ -7,6 +7,6 @@ std::string trimWhitespace(std::string str);
 
 std::string getTimestamp();
 
-// TODO - Add logging function
+void infoLog(std::string message);
 
 #endif

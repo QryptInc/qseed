@@ -46,7 +46,7 @@ CryptokiAdapter::~CryptokiAdapter() {
         CK_RV rv = _pFunctionList->C_Finalize(NULL);
         if (rv != CKR_OK) {
             std::string errMsg = "C_Finalize Error: " + std::to_string(rv);
-            printf("%s\n", errMsg.c_str());
+            infoLog(errMsg);
         }
     }
 
@@ -69,7 +69,7 @@ void CryptokiAdapter::printSlotInfo() {
     CK_TOKEN_INFO tokenInfo;
     rv = _pFunctionList->C_GetTokenInfo(_config.slotID, &tokenInfo);
     if (rv == CKR_TOKEN_NOT_PRESENT) {
-        printf("[%s] SLOT #%ld (%s): NO TOKEN\n", getTimestamp().c_str(), _config.slotID, slotDescription.c_str());
+        infoLog("SLOT #" + std::to_string(_config.slotID) + " (" + slotDescription.c_str() + "): NO TOKEN");
         return;
     }
     if (rv != CKR_OK) {
@@ -77,7 +77,7 @@ void CryptokiAdapter::printSlotInfo() {
         throw std::runtime_error(errMsg);
     }
     std::string tokenLabel = trimWhitespace(std::string((char*)tokenInfo.label, sizeof(tokenInfo.label)));
-    printf("[%s] SLOT #%ld (%s): %s\n", getTimestamp().c_str(), _config.slotID, slotDescription.c_str(), tokenLabel.c_str());
+    infoLog("SLOT #" + std::to_string(_config.slotID) + " (" + slotDescription.c_str() + "): " + tokenLabel.c_str());
 
 }
 
@@ -85,7 +85,7 @@ void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
 
     // Open a session
     CK_SESSION_HANDLE hSession;
-    CK_RV rv = _pFunctionList->C_OpenSession(_config.slotID, CKF_SERIAL_SESSION | CKF_RW_SESSION, NULL, NULL, &hSession);
+    CK_RV rv = _pFunctionList->C_OpenSession(_config.slotID, CKF_SERIAL_SESSION, NULL, NULL, &hSession);
     if (rv != CKR_OK) {
         std::string errMsg = "C_OpenSession Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);
@@ -93,7 +93,7 @@ void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
 
     // Login to session
     CK_UTF8CHAR_PTR pin = (uint8_t*)_config.pin.c_str();
-    rv = _pFunctionList->C_Login(hSession, CKU_SO, pin, strlen((char*)pin));
+    rv = _pFunctionList->C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
     if (rv != CKR_OK) {
         std::string errMsg = "C_Login Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);

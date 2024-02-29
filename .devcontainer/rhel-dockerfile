@@ -24,12 +24,9 @@ WORKDIR /workspaces
 RUN wget https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
 RUN tar -xzvf v1.14.0.tar.gz && rm v1.14.0.tar.gz
 WORKDIR /workspaces/googletest-1.14.0/build
-#RUN cd googletest-release-1.14.0 && mkdir build && cd build
 RUN cmake -DMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr .. 
 RUN make 
 RUN make install
-#RUN cd .. && sudo ln -s `pwd`/googletest /usr/src/gtest
-#RUN sudo ldconfig
 
 # Install SoftHSM
 WORKDIR /workspaces

@@ -72,9 +72,9 @@ CryptokiConfig getCryptokiConfig() {
     }
     cryptokiConfig.slotID = std::stoi(slotIDAsStr);
 
-    const char* pinAsStr = std::getenv("CRYPTOKI_SO_PIN");
+    const char* pinAsStr = std::getenv("CRYPTOKI_USER_PIN");
     if (!pinAsStr) {
-        throw std::runtime_error("CRYPTOKI_SO_PIN environment variable is not set");
+        throw std::runtime_error("CRYPTOKI_USER_PIN environment variable is not set");
     }
     cryptokiConfig.pin = pinAsStr;
 
@@ -104,7 +104,7 @@ int main() {
         std::vector<uint8_t> random(downloadedRandom.begin(), downloadedRandom.begin() + commonConfig.qseedSize);
         cryptokiAdapter.injectSeedRandom(random);
 
-        printf("[%s] Pushed %d bytes of quantum seed material to the HSM.\n", getTimestamp().c_str(), commonConfig.qseedSize);
+        infoLog("Pushed " + std::to_string(commonConfig.qseedSize) + " bytes of quantum seed material to the HSM.");
 
         // Sleep until next interval
         std::this_thread::sleep_for(std::chrono::seconds(commonConfig.qseedPeriod));
