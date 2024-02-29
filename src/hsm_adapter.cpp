@@ -1,10 +1,11 @@
 #include "hsm_adapter.h"
+#include "common.h"
 
 #include <cstring>
 #include <stdexcept>
 #include <dlfcn.h>
 
-CryptokiAdapter::CryptokiAdapter(CryptokiConfig config) : _config(config) {
+CryptokiAdapter::CryptokiAdapter(CryptokiConfig config) : _config(config), _pkcs11Lib(NULL), _pFunctionList(NULL) {
 
     // Load the PKCS#11 library dynamically
     void* _pkcs11Lib = dlopen(_config.libraryFile.c_str(), RTLD_NOW);
@@ -29,37 +30,73 @@ CryptokiAdapter::CryptokiAdapter(CryptokiConfig config) : _config(config) {
         throw std::runtime_error(errMsg);
     }
 
-}
-
-CryptokiAdapter::~CryptokiAdapter() {
-    dlclose(_pkcs11Lib);
-}
-
-void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
-
     // Initialize the library
-    CK_RV rv = _pFunctionList->C_Initialize(NULL);
+    rv = _pFunctionList->C_Initialize(NULL);
     if (rv != CKR_OK) {
         std::string errMsg = "C_Initialize Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);
     }
 
+}
+
+CryptokiAdapter::~CryptokiAdapter() {
+
+    // Finalize the library
+    if (_pFunctionList != NULL) {
+        CK_RV rv = _pFunctionList->C_Finalize(NULL);
+        if (rv != CKR_OK) {
+            std::string errMsg = "C_Finalize Error: " + std::to_string(rv);
+            infoLog(errMsg);
+        }
+    }
+
+    dlclose(_pkcs11Lib);
+
+}
+
+void CryptokiAdapter::printSlotInfo() {
+
+    // Get slot info
+    CK_SLOT_INFO slotInfo;
+    CK_RV rv = _pFunctionList->C_GetSlotInfo(_config.slotID, &slotInfo);
+    if (rv != CKR_OK) {
+        std::string errMsg = "C_GetSlotInfo Error: " + std::to_string(rv);
+        throw std::runtime_error(errMsg);
+    }
+    std::string slotDescription = trimWhitespace(std::string((char*)slotInfo.slotDescription, sizeof(slotInfo.slotDescription)));
+
+    // Get token info
+    CK_TOKEN_INFO tokenInfo;
+    rv = _pFunctionList->C_GetTokenInfo(_config.slotID, &tokenInfo);
+    if (rv == CKR_TOKEN_NOT_PRESENT) {
+        infoLog("SLOT #" + std::to_string(_config.slotID) + " (" + slotDescription.c_str() + "): NO TOKEN");
+        return;
+    }
+    if (rv != CKR_OK) {
+        std::string errMsg = "C_GetTokenInfo Error: " + std::to_string(rv);
+        throw std::runtime_error(errMsg);
+    }
+    std::string tokenLabel = trimWhitespace(std::string((char*)tokenInfo.label, sizeof(tokenInfo.label)));
+    infoLog("SLOT #" + std::to_string(_config.slotID) + " (" + slotDescription.c_str() + "): " + tokenLabel.c_str());
+
+}
+
+void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
+
     // Open a session
     CK_SESSION_HANDLE hSession;
-    rv = _pFunctionList->C_OpenSession(_config.slotID, CKF_SERIAL_SESSION, NULL, NULL, &hSession);
+    CK_RV rv = _pFunctionList->C_OpenSession(_config.slotID, CKF_SERIAL_SESSION, NULL, NULL, &hSession);
     if (rv != CKR_OK) {
         std::string errMsg = "C_OpenSession Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);
     }
 
-    if (!_config.pin.empty()) {
-        // Login to session
-        CK_UTF8CHAR_PTR pin = (uint8_t*)_config.pin.c_str();
-        rv = _pFunctionList->C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
-        if (rv != CKR_OK) {
-            std::string errMsg = "C_Login Error: " + std::to_string(rv);
-            throw std::runtime_error(errMsg);
-        }
+    // Login to session
+    CK_UTF8CHAR_PTR pin = (uint8_t*)_config.pin.c_str();
+    rv = _pFunctionList->C_Login(hSession, CKU_USER, pin, strlen((char*)pin));
+    if (rv != CKR_OK) {
+        std::string errMsg = "C_Login Error: " + std::to_string(rv);
+        throw std::runtime_error(errMsg);
     }
 
     // Seed random number generator
@@ -73,13 +110,6 @@ void CryptokiAdapter::injectSeedRandom(const std::vector<uint8_t>& random) {
     rv = _pFunctionList->C_CloseSession(hSession);
     if (rv != CKR_OK) {
         std::string errMsg = "C_CloseSession Error: " + std::to_string(rv);
-        throw std::runtime_error(errMsg);
-    }
-
-    // Finalize the library
-    rv = _pFunctionList->C_Finalize(NULL);
-    if (rv != CKR_OK) {
-        std::string errMsg = "C_Finalize Error: " + std::to_string(rv);
         throw std::runtime_error(errMsg);
     }
 

@@ -3,7 +3,7 @@
 {
     "name": "qseed",
     "build": {
-        "dockerfile": "./Dockerfile"
+        "dockerfile": "./ubuntu-dockerfile"
     },
 
     // Configure tool-specific properties.

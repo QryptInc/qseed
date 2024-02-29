@@ -1,15 +1,14 @@
-#include "pkcs11.h"
+#include "common.h"
 #include "eaas.h"
 #include "hsm_adapter.h"
 #include "base64.h"
 
 #include <chrono>
-#include <iomanip>
-#include <sstream>
 #include <thread>
+#include <stdexcept>
 
-const uint32_t MAX_QSEED_SIZE = 512*1024;          // 512 kib
-const uint32_t MAX_QSEED_PERIOD = 60*60*24*365;    // 1 year
+const uint32_t MAX_QSEED_SIZE = 64*1024;            // 64 KiB
+const uint32_t MAX_QSEED_PERIOD = 60*60*24*365;     // 1 year
 const uint32_t DEFAULT_QSEED_SIZE = 48;
 const uint32_t DEFAULT_QSEED_PERIOD = 10;
 
@@ -73,26 +72,13 @@ CryptokiConfig getCryptokiConfig() {
     }
     cryptokiConfig.slotID = std::stoi(slotIDAsStr);
 
-    std::string userPIN;
-    const char* userPINAsStr = std::getenv("CRYPTOKI_USER_PIN");
-    if (userPINAsStr) {
-        userPIN = userPINAsStr;
+    const char* pinAsStr = std::getenv("CRYPTOKI_USER_PIN");
+    if (!pinAsStr) {
+        throw std::runtime_error("CRYPTOKI_USER_PIN environment variable is not set");
     }
-    cryptokiConfig.pin = userPIN;
+    cryptokiConfig.pin = pinAsStr;
 
     return cryptokiConfig;
-
-}
-
-std::string getTimestamp() {
-
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t time_t_now = std::chrono::system_clock::to_time_t(now);
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count();
-
-    std::stringstream ss;
-    ss << std::put_time(gmtime(&time_t_now), "%FT%T") << '.' << std::setfill('0') << std::setw(3) << millis << 'Z';
-    return ss.str();
 
 }
 
@@ -106,6 +92,7 @@ int main() {
     // Construct HSM adapter
     CryptokiConfig cryptokiConfig = getCryptokiConfig();
     CryptokiAdapter cryptokiAdapter(cryptokiConfig);
+    cryptokiAdapter.printSlotInfo();
 
     while(1) {
 
@@ -117,7 +104,7 @@ int main() {
         std::vector<uint8_t> random(downloadedRandom.begin(), downloadedRandom.begin() + commonConfig.qseedSize);
         cryptokiAdapter.injectSeedRandom(random);
 
-        printf("[%s] Pushed %d bytes of quantum seed material to the HSM.\n", getTimestamp().c_str(), commonConfig.qseedSize);
+        infoLog("Pushed " + std::to_string(commonConfig.qseedSize) + " bytes of quantum seed material to the HSM.");
 
         // Sleep until next interval
         std::this_thread::sleep_for(std::chrono::seconds(commonConfig.qseedPeriod));

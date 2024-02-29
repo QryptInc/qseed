@@ -8,10 +8,10 @@ option(ENABLE_TESTS "Generate a test executable" OFF)
 
 find_package(CURL REQUIRED)
 find_package(RapidJSON REQUIRED)
-message(STATUS "CRYPTOKI_LIB: $ENV{CRYPTOKI_LIB}")
 
 add_executable (qseed 
     src/base64.cpp
+    src/common.cpp
     src/eaas.cpp
     src/hsm_adapter.cpp
     src/http_client.cpp
@@ -26,7 +26,6 @@ target_include_directories(qseed PRIVATE
 
 target_link_libraries(qseed 
     ${CMAKE_DL_LIBS} 
-    $ENV{CRYPTOKI_LIB}
     CURL::libcurl
 )
 
