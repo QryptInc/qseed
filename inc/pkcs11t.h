@@ -409,7 +409,7 @@ typedef CK_ULONG          CK_CERTIFICATE_TYPE;
 #define CKC_X_509_ATTR_CERT     0x00000001UL
 #define CKC_WTLS                0x00000002UL
 #define CKC_VENDOR_DEFINED      0x80000000UL
-#define CKC_OPENPGP		(CKC_VENDOR_DEFINED|0x00504750)
+
 
 /* CK_ATTRIBUTE_TYPE is a value that identifies an attribute
  * type
@@ -2000,3 +2000,4 @@ typedef CK_SEED_CBC_ENCRYPT_DATA_PARAMS CK_PTR \
                                         CK_SEED_CBC_ENCRYPT_DATA_PARAMS_PTR;
 
 #endif /* _PKCS11T_H_ */
+

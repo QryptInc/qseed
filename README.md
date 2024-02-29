@@ -31,7 +31,7 @@ This section covers how to build and install the qseed application.
 
 4.  Install the qseed application.
     ```bash
-    cmake --install .
+    sudo cmake --install .
     ```
 
 # Quickstart using Thales HSMs 
@@ -80,7 +80,7 @@ This section covers how to start the qseed application for Thales Network Luna 7
 
 7.  Run the executable. Note you need to run the application as root if root privileges are required for the Thales cryptoki library.
     ```
-    sudo -E qseed
+    sudo -E /usr/local/bin/qseed
     ```
     Sample output is shown below.
     ```
