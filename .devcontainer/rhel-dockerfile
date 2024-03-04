@@ -31,6 +31,14 @@ RUN cmake ..
 RUN make
 RUN make install
 
+# Install rapidyaml
+WORKDIR /workspaces
+RUN git clone --recursive https://github.com/biojppm/rapidyaml
+WORKDIR /workspaces/rapidyaml/build
+RUN cmake ..
+RUN cmake --build .
+RUN cmake --install .
+
 # Install gtest
 WORKDIR /workspaces
 RUN wget https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
@@ -39,3 +47,6 @@ WORKDIR /workspaces/googletest-1.14.0/build
 RUN cmake -DMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr .. 
 RUN make 
 RUN make install
+
+# Copy Qseed configuration file
+COPY qseed_config.yml /etc/qseed/qseed_config.yml

@@ -24,5 +24,16 @@ RUN make install
 # Install libcurl and rapidjson
 RUN apt-get -y install libcurl4-openssl-dev rapidjson-dev
 
+# Install rapidyaml
+WORKDIR /workspaces
+RUN git clone --recursive https://github.com/biojppm/rapidyaml
+WORKDIR /workspaces/rapidyaml/build
+RUN cmake ..
+RUN cmake --build .
+RUN cmake --install .
+
 # Install gtest
 RUN apt-get -y install libgtest-dev 
+
+# Copy Qseed configuration file
+COPY qseed_config.yml /etc/qseed/qseed_config.yml

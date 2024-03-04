@@ -1,0 +1,6 @@
+qrypt_token: qrypttokenfromportal
+size: 48      # In bytes
+period: 10    # In seconds
+cryptoki_lib: /usr/local/lib/softhsm/libsofthsm2.so
+cryptoki_slot_id: 0
+cryptoki_user_pin: 1234

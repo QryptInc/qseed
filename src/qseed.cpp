@@ -6,6 +6,12 @@
 #include <chrono>
 #include <thread>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
+#include <ryml.hpp>
+#include <ryml_std.hpp>
+
+const std::string DEFAULT_CONFIG_FILE = "/etc/qseed/qseed_config.yml";
 
 const uint32_t MAX_QSEED_SIZE = 64*1024;            // 64 KiB
 const uint32_t MAX_QSEED_PERIOD = 60*60*24*365;     // 1 year
@@ -24,31 +30,34 @@ struct CommonConfig {
 
 };
 
-CommonConfig getCommonConfig() {
+CommonConfig getCommonConfig(std::string yamlContents) {
 
     CommonConfig commonConfig(DEFAULT_QSEED_SIZE, DEFAULT_QSEED_PERIOD);
+    ryml::Tree tree = ryml::parse_in_place((char*)yamlContents.c_str());
 
-    const char* qryptToken = std::getenv("QRYPT_TOKEN");
-    if (!qryptToken) {
-        throw std::runtime_error("QRYPT_TOKEN environment variable is not set");
+    const char* qryptTokenKey = "qrypt_token";
+    if (tree[qryptTokenKey].has_key() && tree[qryptTokenKey].has_val()) {
+        ryml::from_chars(tree[qryptTokenKey].val(), &commonConfig.qryptToken);
+    } 
+    else {
+        throw std::runtime_error(std::string(qryptTokenKey) + " is not set in configuration file.");
     }
-    commonConfig.qryptToken = qryptToken;
 
-    const char* qseedSizeAsStr = std::getenv("QSEED_SIZE");
-    if (qseedSizeAsStr) {
-        commonConfig.qseedSize = std::stoi(qseedSizeAsStr);
+    const char* qseedSizeKey = "size";
+    if (tree[qseedSizeKey].has_key() && tree[qseedSizeKey].has_val()) {
+        ryml::from_chars(tree[qseedSizeKey].val(), &commonConfig.qseedSize);
     }
     if (commonConfig.qseedSize == 0 || commonConfig.qseedSize > MAX_QSEED_SIZE) {
-        std::string errMsg = "QSEED_SIZE must be greater than 0 and less than or equal to " + std::to_string(MAX_QSEED_SIZE) + ".";
+        std::string errMsg = "Qseed size must be greater than 0 and less than or equal to " + std::to_string(MAX_QSEED_SIZE) + ".";
         throw std::runtime_error(errMsg);
     }
 
-    const char* qseedPeriodAsStr = std::getenv("QSEED_PERIOD");
-    if (qseedPeriodAsStr) {
-        commonConfig.qseedPeriod = std::stoi(qseedPeriodAsStr);
+    const char* qseedPeriodKey = "period";
+    if (tree[qseedPeriodKey].has_key() && tree[qseedPeriodKey].has_val()) {
+        ryml::from_chars(tree[qseedPeriodKey].val(), &commonConfig.qseedPeriod);
     }
     if (commonConfig.qseedPeriod == 0 || commonConfig.qseedPeriod > MAX_QSEED_PERIOD) {
-        std::string errMsg = "QSEED_PERIOD must be greater than 0 and less than or equal to " + std::to_string(MAX_QSEED_PERIOD) + ".";
+        std::string errMsg = "Qseed period must be greater than 0 and less than or equal to " + std::to_string(MAX_QSEED_PERIOD) + ".";
         throw std::runtime_error(errMsg);
     }
 
@@ -56,41 +65,69 @@ CommonConfig getCommonConfig() {
 
 }
 
-CryptokiConfig getCryptokiConfig() {
+CryptokiConfig getCryptokiConfig(std::string yamlContents) {
 
     CryptokiConfig cryptokiConfig = {};
+    ryml::Tree tree = ryml::parse_in_place((char*)yamlContents.c_str());
 
-    const char* libraryFile = std::getenv("CRYPTOKI_LIB");
-    if (!libraryFile) {
-        throw std::runtime_error("CRYPTOKI_LIB environment variable is not set");
+    const char* libraryFileKey = "cryptoki_lib";
+    if (tree[libraryFileKey].has_key() && tree[libraryFileKey].has_val()) {
+        ryml::from_chars(tree[libraryFileKey].val(), &cryptokiConfig.libraryFile);
+    } 
+    else {
+        throw std::runtime_error(std::string(libraryFileKey) + " is not set in configuration file.");
     }
-    cryptokiConfig.libraryFile = libraryFile;
 
-    const char* slotIDAsStr = std::getenv("CRYPTOKI_SLOT_ID");
-    if (!slotIDAsStr) {
-        throw std::runtime_error("CRYPTOKI_SLOT_ID environment variable is not set");
+    const char* slotIDKey = "cryptoki_slot_id";
+    if (tree[slotIDKey].has_key() && tree[slotIDKey].has_val()) {
+        ryml::from_chars(tree[slotIDKey].val(), &cryptokiConfig.slotID);
+    } 
+    else {
+        throw std::runtime_error(std::string(slotIDKey) + " is not set in configuration file.");
     }
-    cryptokiConfig.slotID = std::stoi(slotIDAsStr);
 
-    const char* pinAsStr = std::getenv("CRYPTOKI_USER_PIN");
-    if (!pinAsStr) {
-        throw std::runtime_error("CRYPTOKI_USER_PIN environment variable is not set");
+    const char* pinKey = "cryptoki_user_pin";
+    if (tree[pinKey].has_key() && tree[pinKey].has_val()) {
+        ryml::from_chars(tree[pinKey].val(), &cryptokiConfig.pin);
+    } 
+    else {
+        throw std::runtime_error(std::string(pinKey) + " is not set in configuration file.");
     }
-    cryptokiConfig.pin = pinAsStr;
 
     return cryptokiConfig;
 
 }
 
+std::string readConfigFile(const std::string& configFile) {
+
+    std::ifstream inFile(configFile.c_str(), std::ifstream::in);
+    if (inFile.fail()) {
+        throw std::runtime_error("Could not open config file at " + configFile + ".");
+    }
+
+    std::stringstream strStream;
+    strStream << inFile.rdbuf();
+    return strStream.str();
+
+}
+
 int main() {
 
-    CommonConfig commonConfig = getCommonConfig();
+    std::string configFile = DEFAULT_CONFIG_FILE;
+    const char* configFileFromEnv = std::getenv("QSEED_CONFIG_FILE");
+    if (configFileFromEnv) {
+        configFile = configFileFromEnv;
+    }
+
+    // Parse configurations
+    std::string yamlContents = readConfigFile(configFile);
+    CommonConfig commonConfig = getCommonConfig(yamlContents);
+    CryptokiConfig cryptokiConfig = getCryptokiConfig(yamlContents);
 
     // Construct EaaS client
     EaaS eaasClient(commonConfig.qryptToken);
 
     // Construct HSM adapter
-    CryptokiConfig cryptokiConfig = getCryptokiConfig();
     CryptokiAdapter cryptokiAdapter(cryptokiConfig);
     cryptokiAdapter.printSlotInfo();
 
