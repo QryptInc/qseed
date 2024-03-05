@@ -36,22 +36,22 @@ This section covers how to start the qseed application for Thales Network Luna 7
     
 5.  Build and install the qseed application. Follow the steps in the [Build](#build) section below.
 
-6.  Set runtime configurations using environment variables. The following configurations can be set using environment variables.
+6.  Set runtime configurations using the yaml configuration file. The Qseed application will expect the configuration file at /etc/qseed/qseed_config.yml by default. You can override the default location by using the QSEED_CONFIG_FILE environment variable. The following configurations can be set in the yaml configuration file.
 
-    | ENV | Description |
-    | --- | ------------|
-    | QRYPT_TOKEN | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
-    | QSEED_SIZE | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 65,536 (64 KiB). Defaults to 48. |
-    | QSEED_PERIOD | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
-    | CRYPTOKI_LIB | Cryptoki shared library file location. |
-    | CRYPTOKI_SLOT_ID | Cryptoki slot ID as defined in the PKCS11 specification. |
-    | CRYPTOKI_USER_PIN | Cryptoki crypto user role PIN as defined in the PKCS11 specification. |
+    | Configuration | Description |
+    | ------------- | ------------|
+    | qrypt_token | Token (with Entropy scope) retrieved from the Qrypt portal to get access to Qrypt services. |
+    | size | Amount of seed random in bytes to inject into the HSM at the beginning of each time period. <br>Valid values are inclusively between 1 byte and 65,536 (64 KiB). Defaults to 48. |
+    | period | The time period in seconds between seed random injections. <br>Valid values are inclusively between 1 second and 31,536,000 seconds (about 1 year). Defaults to 10. |
+    | cryptoki_lib | Cryptoki shared library file location. |
+    | cryptoki_slot_id | Cryptoki slot ID as defined in the PKCS11 specification. |
+    | cryptoki_user_pin | Cryptoki crypto user role PIN as defined in the PKCS11 specification. |
 
-    ```bash
-    export QRYPT_TOKEN=qrypttokenfromportal
-    export CRYPTOKI_LIB=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
-    export CRYPTOKI_SLOT_ID=0
-    export CRYPTOKI_USER_PIN=1234
+    ```yaml
+    qrypt_token: qrypttokenfromportal
+    cryptoki_lib: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+    cryptoki_slot_id: 0
+    cryptoki_user_pin: 1234
     ```
 
 7.  Run the executable. Note you need to run the application as root if root privileges are required for the Thales cryptoki library.
@@ -79,18 +79,29 @@ This section covers how to build and install the qseed application.
     apt-get -y install libcurl4-openssl-dev rapidjson-dev
     ``` 
 
-3.  Create and navigate to a build directory.
+3.  Install rapidyaml on your system. See the dockerfiles under .devcontainer as a reference.
+    ```bash
+    git clone --recursive https://github.com/biojppm/rapidyaml
+    cd rapidyaml
+    mkdir build && cd build
+    cmake ..
+    cmake --build .
+    cmake --install .
+    cd ../..
+    ``` 
+
+4.  Create and navigate to a build directory.
     ```bash
     mkdir build && cd build
     ```
 
-4.  Configure and build the qseed application.
+5.  Configure and build the qseed application.
     ```bash
     cmake .. 
     cmake --build .
     ```
 
-5.  Install the qseed application.
+6.  Install the qseed application.
     ```bash
     sudo cmake --install .
     ```
@@ -152,12 +163,12 @@ This section covers how to test the application with SoftHSM.
     The token has been initialized and is reassigned to slot 824959035
     ```
 
-4.  Set environment variables. The CRYPTOKI_SLOT_ID should be set to the reassigned slot id from the second step. The CRYPTOKI_USER_PIN should be set to the user PIN from the second step.
-    ```bash
-    export QRYPT_TOKEN=qrypttokenfromportal
-    export CRYPTOKI_LIB=/usr/local/lib/softhsm/libsofthsm2.so
-    export CRYPTOKI_SLOT_ID=824959035
-    export CRYPTOKI_USER_PIN=1234
+4.  Create or update the configuration file at /etc/qseed/qseed_config.yml. The cryptoki_slot_id should be set to the reassigned slot id from the second step. The cryptoki_user_pin should be set to the user PIN from the second step.
+    ```yaml
+    qrypt_token: qrypttokenfromportal
+    cryptoki_lib: /usr/local/lib/softhsm/libsofthsm2.so
+    cryptoki_slot_id: 824959035
+    cryptoki_user_pin: 1234
     ```
 
 5.  Set LD_LIBRARY_PATH so that the installed qseed application can find the SoftHSM library.
