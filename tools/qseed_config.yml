@@ -1,0 +1,4 @@
+qrypt_token: qrypttokenfromportal
+cryptoki_lib: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
+cryptoki_slot_id: 0
+cryptoki_user_pin: 1234
