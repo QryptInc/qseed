@@ -49,8 +49,6 @@ This section covers how to start the qseed application for Thales Network Luna 7
 
     ```yaml
     qrypt_token: qrypttokenfromportal
-    size: 48      # In bytes
-    period: 10    # In seconds
     cryptoki_lib: /usr/safenet/lunaclient/lib/libCryptoki2_64.so
     cryptoki_slot_id: 0
     cryptoki_user_pin: 1234

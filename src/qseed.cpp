@@ -30,7 +30,7 @@ struct CommonConfig {
 
 };
 
-CommonConfig getCommonConfig(std::string yamlContents) {
+CommonConfig getCommonConfig(const std::string& yamlContents) {
 
     CommonConfig commonConfig(DEFAULT_QSEED_SIZE, DEFAULT_QSEED_PERIOD);
     ryml::Tree tree = ryml::parse_in_place((char*)yamlContents.c_str());
@@ -65,7 +65,7 @@ CommonConfig getCommonConfig(std::string yamlContents) {
 
 }
 
-CryptokiConfig getCryptokiConfig(std::string yamlContents) {
+CryptokiConfig getCryptokiConfig(const std::string& yamlContents) {
 
     CryptokiConfig cryptokiConfig = {};
     ryml::Tree tree = ryml::parse_in_place((char*)yamlContents.c_str());
