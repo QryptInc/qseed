@@ -5,8 +5,9 @@ See [Seed PKCS#11 HSMs](https://docs.qrypt.com/eaas/pkcs11/) for more informatio
   
 ## Table of Contents
 1. [Quickstart using Thales HSMs](#quickstart-using-thales-hsms)
-2. [Build](#build)
-3. [Test](#test)
+2. [Install using Debian Package](#install-using-debian-package)
+3. [Build](#build)
+4. [Test](#test)
     1. [Build and Run GTests](#build-and-run-gtests)
     2. [Test using SoftHSM](#test-using-softhsm)
 
@@ -34,7 +35,7 @@ This section covers how to start the qseed application for Thales Network Luna 7
 
     Follow the instructions provided by Thales. The crypto user role PIN will be needed for the qseed application configuration.
     
-5.  Build and install the qseed application. Follow the steps in the [Build](#build) section below.
+5.  Install the qseed application by following the steps in the [Install using Debian Package](#install-using-debian-package) section below. You may build the qseed application if the released packages are not available for your platform. Follow the steps in the [Build](#build) section below for building the qseed application.
 
 6.  Set runtime configurations using the yaml configuration file. The Qseed application will expect the configuration file at /etc/qseed/qseed_config.yml by default. You can override the default location by using the QSEED_CONFIG_FILE environment variable. The following configurations can be set in the yaml configuration file.
 
@@ -64,6 +65,21 @@ This section covers how to start the qseed application for Thales Network Luna 7
     [2024-02-29T15:02:40.842Z] Pushed 48 bytes of quantum seed material to the HSM.
     [2024-02-29T15:02:51.349Z] Pushed 48 bytes of quantum seed material to the HSM.
     [2024-02-29T15:03:01.904Z] Pushed 48 bytes of quantum seed material to the HSM.
+    ```
+
+# Install using Debian Package
+This section covers how to install the qseed application using the prebuilt debian package.
+
+1.  Download the [debian package](https://github.com/QryptInc/qseed/releases) from github.
+
+2.  Install the debian package.
+    ```
+    apt install ./qseed_0.1-1.deb
+    ```
+
+3.  Show package information.
+    ```
+    apt show qseed
     ```
 
 # Build

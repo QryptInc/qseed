@@ -1,0 +1,5 @@
+Package: qseed
+Version: 0.1-1
+Architecture: amd64
+Maintainer: Qrypt <qryptdev@qrypt.com>
+Description: The qseed application downloads quantum entropy from Qrypt's EaaS and injects it into an HSM as seed random. The download and injection are performed periodically.
