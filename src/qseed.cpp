@@ -134,8 +134,7 @@ int main() {
     while(1) {
 
         // Download quantum random
-        uint32_t sizeInKibs = (commonConfig.qseedSize + 1023) / 1024;
-        std::vector<uint8_t> downloadedRandom = eaasClient.requestEntropy(sizeInKibs);
+        std::vector<uint8_t> downloadedRandom = eaasClient.requestEntropy(commonConfig.qseedSize);
 
         // Inject quantum random into HSM
         std::vector<uint8_t> random(downloadedRandom.begin(), downloadedRandom.begin() + commonConfig.qseedSize);
