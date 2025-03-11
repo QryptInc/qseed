@@ -3,42 +3,37 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <numeric>
 
 const uint32_t EAAS_MAX_REQUEST = 512;
 const std::string EAAS_FQDN = "https://api-eus.qrypt.com";
 
-std::vector<std::string> parseJsonResponse(std::string jsonResponse) {
-
-    // Parse json response
-    ::rapidjson::Document restJson;
-    restJson.Parse(jsonResponse.c_str());
-
-    // Check for invalid json schema
-    if (restJson.HasParseError()) {
-        throw std::runtime_error(::rapidjson::GetParseError_En(restJson.GetParseError()));
-    }
-    if (!restJson.IsObject()) {
-        throw std::runtime_error("JSON document is not an object.");
-    }
-    if (!restJson.HasMember("size")) {
-        throw std::runtime_error("Missing size from JSON document.");
-    }
-    if (!restJson.HasMember("random")) {
-        throw std::runtime_error("Missing random from JSON document.");
+std::vector<uint8_t> parseAndFlattenEntropy(const std::string& jsonResponse) {
+    rapidjson::Document doc;
+    doc.Parse(jsonResponse.c_str());
+    if (!doc.IsObject() || !doc.HasMember("entropy") || !doc["entropy"].IsArray()) {
+        throw std::runtime_error("Invalid JSON response format");
     }
 
-    // Select base64 encoded random blocks
-    std::vector<std::string> randomBlocks;
-    const ::rapidjson::Value &jsonRandomBlocks = restJson["random"];
-    if (!jsonRandomBlocks.IsArray()) {
-        throw std::runtime_error("random in JSON document is not an array.");
-    }
-    for (rapidjson::SizeType i = 0; i < jsonRandomBlocks.Size(); i++) {
-        randomBlocks.push_back(jsonRandomBlocks[i].GetString());
+    std::ostringstream concatenatedEntropy;
+    for (const auto& item: doc["entropy"].GetArray()) {
+    if (!item.IsString()) {
+        throw std::runtime_error("Invalid entropy block");
+        }
+        concatenatedEntropy << base64_decode(item.GetString());
     }
 
-    return randomBlocks;
+    std::string str = concatenatedEntropy.str();
 
+    // Convert the string to a vector<uint8_t>
+    std::vector<uint8_t> result(str.begin(), str.end());
+    
+    return result;
 }
 
 std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
@@ -51,8 +46,8 @@ std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
     // Set HTTP request details
     HttpRequest request = {};
     request.fqdn = EAAS_FQDN;
-    request.method = "GET";
-    request.path = std::string("/api/v1/quantum-entropy") + std::string("?size=") + std::to_string(size);
+    request.method = "POST";
+    request.path = std::string("/api/v1/entropy");
 
     // Set HTTP headers
     std::vector<std::string> headers;
@@ -60,6 +55,29 @@ std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
     std::string authBearer = "Authorization: Bearer " + _token;
     headers.push_back(authBearer);
     request.headers = headers;
+
+    // Calculate the number of blocks needed
+    // The max block size is 512 bytes.
+    uint64_t num_packets_u64 = (size / 512) + std::min(static_cast<unsigned int>(1), size % 512);
+    size_t block_count = static_cast<size_t>(num_packets_u64);
+
+    size_t block_size = 1;
+
+    // if we need more than one block, use max size
+    if (block_count > 1){
+        block_size = 512;
+    }
+
+    // Write body
+    rapidjson::StringBuffer jsonBuffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(jsonBuffer);
+    writer.StartObject();
+    writer.Key("block_size");
+    writer.Int(block_size);
+    writer.Key("block_count");
+    writer.Int(block_count);
+    writer.EndObject();
+    request.body = jsonBuffer.GetString();
 
     // Perform HTTP request
     HttpResponse response = _httpClient->send(request);
@@ -69,13 +87,7 @@ std::vector<uint8_t> EaaS::requestEntropy(uint32_t size) {
     }
 
     // Parse and decode response
-    std::vector<uint8_t> random;
-    std::vector<std::string> base64randomBlocks = parseJsonResponse(response.body);
-    for (const auto &base64randomBlock : base64randomBlocks) {
-        std::string randomBlock = base64_decode(base64randomBlock);
-        random.insert(random.end(), randomBlock.begin(), randomBlock.end());
-    }
+    std::vector<uint8_t> random = parseAndFlattenEntropy(response.body);
 
-    return random;
-    
+    return random;  
 }
