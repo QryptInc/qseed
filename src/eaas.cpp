@@ -22,11 +22,11 @@ std::vector<uint8_t> parseAndFlattenEntropy(const std::string& jsonResponse) {
 
     std::ostringstream concatenatedEntropy;
     for (const auto& item: doc["entropy"].GetArray()) {
-    if (!item.IsString()) {
-        throw std::runtime_error("Invalid entropy block");
+        if (!item.IsString()) {
+            throw std::runtime_error("Invalid entropy block");
+            }
+            concatenatedEntropy << base64_decode(item.GetString());
         }
-        concatenatedEntropy << base64_decode(item.GetString());
-    }
 
     std::string str = concatenatedEntropy.str();
 
